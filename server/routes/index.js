@@ -57,3 +57,55 @@ module.exports.displayLoginPage = (req, res, next) => {
           return res.redirect('/')
       }
   }
+
+
+   //proces register
+   module.exports.processRegisterPage = (req, res, next) => {
+    console.log('Processing registration...');
+    console.log('Request body:', req.body);
+
+    let newUser = new User({
+        username: req.body.username,
+        email: req.body.email,
+        displayName: req.body.displayName,
+    });
+
+    User.register(newUser, req.body.password, (err) => {
+        if (err) {
+            console.error('Registration error:', err);
+            if (err.name === "UserExistsError") {
+                req.flash('registerMessage', 'User already exists');
+            }
+            return res.render('auth/register', {
+                title: 'Register',
+                message: req.flash('registerMessage'),
+                displayName: req.user ? req.user.displayName : '',
+            });
+        }
+
+        console.log('User registered successfully!');
+        req.login(newUser, (err) => {
+            if (err) {
+                console.error('Login failed after registration:', err);
+                return next(err);
+            }
+            console.log('Login successful after registration, redirecting...');
+            res.redirect('tournamentslist');
+        });
+    });
+};
+
+
+  module.exports.peformLogout = (req,res,next)=>
+  {
+
+    req.logout(function(err){
+        if(err){
+            return next(err);
+        }
+    })
+    res.redirect('/');
+
+    
+        
+  }
